@@ -61,6 +61,8 @@ export class ChePluginMenu {
         commands.addCommand(ChePluginManagerCommands.SHOW_AVAILABLE_PLUGINS.id, {
             label: ChePluginManagerCommands.SHOW_AVAILABLE_PLUGINS.label,
             isEnabled: () => false,
+            // isToggled: () => true,
+            // isEnabled: () => false,
             execute: () => setTimeout(() => this.chePluginCommandContribution.showAvailablePlugins(), 100)
         });
 
@@ -125,75 +127,6 @@ export class ChePluginMenu {
             type: 'command',
             command: ChePluginManagerCommands.ADD_REGISTRY.id
         });
-
-        // menu.addItem({
-        //     type: 'submenu',
-        //     submenu: this.getSubmenu(commands)
-        // });
-
     }
-
-    // getSubmenu(commands: CommandRegistry): Menu {
-    //     const menu = new Menu({
-    //         commands
-    //     });
-    //     menu.title.label = 'Change Plugin Registry';
-
-    //     commands.addCommand(ChePluginManagerCommands.OPEN_CHE_REGISTRY.id, {
-    //         label: ChePluginManagerCommands.OPEN_CHE_REGISTRY.label,
-    //         isToggled: () => true,
-    //         execute: () => setTimeout(() => this.chePluginManager.changeRegistry(this.chePluginManager.getDefaultRegistry()), 100)
-    //     });
-
-    //     commands.addCommand(ChePluginManagerCommands.OPEN_VSCODE_REGISTRY.id, {
-    //         label: ChePluginManagerCommands.OPEN_VSCODE_REGISTRY.label,
-    //         isEnabled: () => false,
-    //         execute: () => setTimeout(() => this.chePluginCommandContribution.openVSCodePluginRegistry(), 100)
-    //     });
-
-    //     menu.addItem({
-    //         type: 'command',
-    //         command: ChePluginManagerCommands.OPEN_CHE_REGISTRY.id
-    //     });
-
-    //     menu.addItem({
-    //         type: 'command',
-    //         command: ChePluginManagerCommands.OPEN_VSCODE_REGISTRY.id
-    //     });
-
-    //     const registryList = this.chePluginManager.getRegistryList().filter(registry => registry.name !== 'Default');
-
-    //     if (registryList.length > 0) {
-    //         // menu.addItem({
-    //         //     type: 'separator'
-    //         // });
-
-    //         let index = 1;
-    //         registryList.forEach(registry => {
-    //             commands.addCommand(`plugin-manager:open_registry_${index}`, {
-    //                 label: registry.name,
-    //                 execute: () => setTimeout(() => this.chePluginManager.changeRegistry(registry), 100)
-    //             });
-
-    //             menu.addItem({
-    //                 type: 'command',
-    //                 command: `plugin-manager:open_registry_${index}`
-    //             });
-
-    //             index++;
-    //         });
-    //     }
-
-    //     menu.addItem({
-    //         type: 'separator'
-    //     });
-
-    //     menu.addItem({
-    //         type: 'command',
-    //         command: ChePluginManagerCommands.ADD_REGISTRY.id
-    //     });
-
-    //     return menu;
-    // }
 
 }
