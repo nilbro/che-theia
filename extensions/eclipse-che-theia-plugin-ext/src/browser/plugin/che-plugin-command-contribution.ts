@@ -91,24 +91,26 @@ export class ChePluginCommandContribution implements CommandContribution {
 
     }
 
-// Here are the Extensions view filters:
+    // Here are the Extensions view filters:
 
-// @builtin - Show extensions that come with VS Code. Grouped by type (Programming Languages, Themes, etc.).
-// @disabled - Show disabled installed extensions.
-// @installed - Show installed extensions.
-// @outdated - Show outdated installed extensions. A newer version is available on the Marketplace.
-// @enabled - Show enabled installed extensions. Extensions can be individually enabled/disabled.
-// @recommended - Show recommended extensions. Grouped as Workspace specific or general use.
-// @category - Show extensions belonging to specified category. Below are a few of supported categories. For a complete list, type @category and follow the options in the suggestion list:
-// @category:themes
-// @category:formatters
-// @category:linters
-// @category:snippets
+    // @builtin - Show extensions that come with VS Code. Grouped by type (Programming Languages, Themes, etc.).
+    // @disabled - Show disabled installed extensions.
+    // @installed - Show installed extensions.
+    // @outdated - Show outdated installed extensions. A newer version is available on the Marketplace.
+    // @enabled - Show enabled installed extensions. Extensions can be individually enabled/disabled.
+    // @recommended - Show recommended extensions. Grouped as Workspace specific or general use.
+    // @category - Show extensions belonging to specified category. Below are a few of supported categories.
+    // For a complete list, type @category and follow the options in the suggestion list:
 
-// @category:che_editor
-// @category:che_plugin
-// @category:theia_plugin
-// @category:vs_code_extension
+    // @category:themes
+    // @category:formatters
+    // @category:linters
+    // @category:snippets
+
+    // @category:che_editor
+    // @category:che_plugin
+    // @category:theia_plugin
+    // @category:vs_code_extension
 
     //
     async showAvailablePlugins() {
