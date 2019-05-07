@@ -22,12 +22,32 @@ import URI from '@theia/core/lib/common/uri';
 
 const yaml = require('js-yaml');
 
+/**
+ * Describes plugin inside plugin list
+ * https://che-plugin-registry.openshift.io/plugins/
+ */
 export interface ChePluginMetadataInternal {
+
+    // {
+    // "id": "che-incubator/theia-dev/0.0.1",
+    // "displayName": "Che Theia Dev Plugin",
+    // "version": "0.0.1",
+    // "type": "Che Plugin",
+    // "name": "theia-dev",
+    // "description": "Che Theia Dev Plugin",
+    // "publisher": "che-incubator",
+    // "links": {
+    //      "self": "/v2/plugins/che-incubator/theia-dev/0.0.1"
+    //  }
+    // },
+
     id: string,
+    displayName: string,
     version: string,
     type: string,
     name: string,
     description: string,
+    publisher: string,
     links: {
         self?: string,
         [link: string]: string
@@ -56,6 +76,7 @@ export class ChePluginServiceImpl implements ChePluginService {
             const workpsaceSettings: WorkspaceSettings = await this.cheApiService.getWorkspaceSettings();
             if (workpsaceSettings && workpsaceSettings['cheWorkspacePluginRegistryUrl']) {
                 let uri = workpsaceSettings['cheWorkspacePluginRegistryUrl'];
+                console.log('>> DEFAULT PLUGIN REGISTRY URI: ', uri);
 
                 if (uri.endsWith('/')) {
                     uri = uri.substring(0, uri.length - 1);
@@ -99,17 +120,17 @@ export class ChePluginServiceImpl implements ChePluginService {
             await this.getDefaultRegistry();
         }
 
-        // all the plugins present on marketplace
+        // Get list of ChePluginMetadataInternal from plugin registry
         const marketplacePlugins = await this.loadPluginList(registry);
         if (!marketplacePlugins) {
             return Promise.reject('Unable to get plugins from marketplace');
         }
 
-        const shortKeyFormat = registry.uri === this.defaultRegistry.uri;
+        const longKeyFormat = registry.uri !== this.defaultRegistry.uri;
         const plugins: ChePluginMetadata[] = await Promise.all(
             marketplacePlugins.map(async marketplacePlugin => {
                 const pluginYamlURI = this.getPluginYampURI(registry, marketplacePlugin);
-                return await this.loadPluginMetadata(pluginYamlURI, shortKeyFormat);
+                return await this.loadPluginMetadata(pluginYamlURI, longKeyFormat);
             }
             ));
 
@@ -143,16 +164,19 @@ export class ChePluginServiceImpl implements ChePluginService {
             const self: string = plugin.links.self;
             if (self.startsWith('/')) {
                 // /vitaliy-guliy/che-theia-plugin-registry/master/plugins/org.eclipse.che.samples.hello-world-frontend-plugin/0.0.1/meta.yaml
+                // /v2/plugins/che-incubator/typescript/1.30.2
                 const uri = new URI(registry.uri);
                 return `${uri.scheme}://${uri.authority}${self}`;
             } else {
                 const base = this.getBaseDirectory(registry);
                 // org.eclipse.che.samples.hello-world-frontend-plugin/0.0.1/meta.yaml
+                // che-incubator/typescript/1.30.2
                 return `${base}${self}`;
             }
         } else {
             const base = this.getBaseDirectory(registry);
-            return `${base}${plugin.id}/${plugin.version}/meta.yaml`;
+            // return `${base}${plugin.id}/${plugin.version}/meta.yaml`;
+            return `${base}/${plugin.id}/meta.yaml`;
         }
     }
 
@@ -170,36 +194,80 @@ export class ChePluginServiceImpl implements ChePluginService {
         return uri;
     }
 
-    private async loadPluginMetadata(yamlURI: string, shortKeyFormat: boolean): Promise<ChePluginMetadata> {
+    private async loadPluginMetadata(yamlURI: string, longKeyFormat: boolean): Promise<ChePluginMetadata> {
         try {
             const noCache = { headers: { 'Cache-Control': 'no-cache' } };
             const data = (await this.axiosInstance.get<ChePluginMetadata[]>(yamlURI, noCache)).data;
             const props: ChePluginMetadata = yaml.safeLoad(data);
 
+            // TODO: remove this field. Check for `type` field instead.
             const disabled: boolean = props.type === 'Che Editor';
 
-            let key: string;
-            if (shortKeyFormat) {
-                key = props.id + ':' + props.version;
-            } else {
-                const suffix = `${props.id}/${props.version}/meta.yaml`;
-                if (yamlURI.endsWith(suffix)) {
-                    const uri = yamlURI.substring(0, yamlURI.length - suffix.length);
-                    key = `${uri}${props.id}:${props.version}`;
+            // let key: string;
+            let key = `${props.publisher}/${props.name}/${props.version}`;
+            if (longKeyFormat) {
+                if (yamlURI.endsWith(key)) {
+                    const uri = yamlURI.substring(0, yamlURI.length - key.length);
+                    key = `${uri}${props.publisher}/${props.name}/${props.version}`;
+                } else if (yamlURI.endsWith(`${key}/meta.yaml`)) {
+                    const uri = yamlURI.substring(0, yamlURI.length - `${key}/meta.yaml`.length);
+                    key = `${uri}${props.publisher}/${props.name}/${props.version}`;
                 }
             }
 
+            // if (shortKeyFormat) {
+            //     // key = props.id + ':' + props.version;
+            //     key = `${props.publisher}/${props.name}/${props.version}`;
+            // } else {
+            //     const suffix = `${props.id}/${props.version}/meta.yaml`;
+            //     if (yamlURI.endsWith(suffix)) {
+            //         const uri = yamlURI.substring(0, yamlURI.length - suffix.length);
+            //         key = `${uri}${props.id}:${props.version}`;
+            //     }
+            // }
+
             return {
-                id: props.id,
-                type: props.type,
+                // id: props.id,
+                publisher: props.publisher,
                 name: props.name,
                 version: props.version,
+                type: props.type,
+                displayName: props.displayName,
+                title: props.title,
                 description: props.description,
-                publisher: props.publisher,
                 icon: props.icon,
+                url: props.url,
+                repository: props.repository,
+                firstPublicationDate: props.firstPublicationDate,
+                category: props.category,
+                latestUpdateDate: props.latestUpdateDate,
+
                 disabled: disabled,
                 key: key
+
+                // // id: string,
+                // publisher: string,
+                // name: string,
+                // version: string,
+                // type: string,
+                // displayName: string,
+                // title: string,
+                // description: string,
+                // icon: string,
+                // url: string,
+                // repository: string,
+                // firstPublicationDate: string,
+                // category: string,
+                // latestUpdateDate: string,
+
+                // // Remove this field. Check the `type` field instead.
+                // disabled: boolean,
+
+                // // Plugin KEY. Used to set in workpsace configuration
+                // key: string
+
             };
+
         } catch (error) {
             console.log(error);
             return Promise.reject('Unable to load plugin metadata. ' + error.message);

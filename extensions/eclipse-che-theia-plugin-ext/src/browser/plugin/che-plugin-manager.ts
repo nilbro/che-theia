@@ -100,8 +100,10 @@ export class ChePluginManager {
         if (prefs) {
             const instance = this;
             Object.keys(prefs).forEach(repoName => {
-                if (repoName !== 'Default') {
-                    const uri = prefs[repoName];
+                const uri = prefs[repoName];
+
+                const registry = this.registryList.find(r => r.uri === uri);
+                if (registry === undefined) {
                     instance.registryList.push({
                         name: repoName,
                         uri: uri

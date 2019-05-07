@@ -423,20 +423,45 @@ export interface ChePluginRegistry {
     uri: string
 }
 
+/**
+ * Describes properties in plugin meta.yaml
+ */
 export interface ChePluginMetadata {
-    id: string,
-    type: string,
+    // id: string,
+    publisher: string,
     name: string,
     version: string,
+    type: string,
+    displayName: string,
+    title: string,
     description: string,
-    publisher: string,
     icon: string,
+    url: string,
+    repository: string,
+    firstPublicationDate: string,
+    category: string,
+    latestUpdateDate: string,
 
+    // Remove this field. Check the `type` field instead.
     disabled: boolean,
 
     // Plugin KEY. Used to set in workpsace configuration
     key: string
 }
+
+// publisher: che-incubator
+// name: theia-dev
+// version: 0.0.1
+// type: Che Plugin
+// displayName: Che Theia Dev Plugin
+// title: Che Theia Dev Plugin
+// description: Che Theia Dev Plugin
+// icon: https://www.eclipse.org/che/images/logo-eclipseche.svg
+// url: https://github.com/che-incubator/che-theia-dev-plugin/releases/download/0.0.3/che-theia-dev-plugin.tar.gz
+// repository: https://github.com/che-incubator/che-theia-dev-plugin/
+// firstPublicationDate: "2019-02-05"
+// category: Other
+// latestUpdateDate: "2019-04-25"
 
 export const CHE_PLUGIN_SERVICE_PATH = '/che-plugin-service';
 
