@@ -193,7 +193,7 @@ export class ChePluginManager {
             // add the plugin to workspace configuration
             await this.chePluginService.addPlugin(plugin.key);
             await this.delay(1000);
-            this.messageService.info(`Plugin ${plugin.name}:${plugin.version} has been successfully installed`);
+            this.messageService.info(`Plugin '${plugin.publisher}/${plugin.name}/${plugin.version}' has been successfully installed`);
 
             // add the plugin to the list of workspace plugins
             this.installedPlugins.push(plugin.key);
@@ -202,7 +202,7 @@ export class ChePluginManager {
             this.notifyWorkspaceConfigurationChanged();
             return true;
         } catch (error) {
-            this.messageService.error(`Unable to install plugin ${plugin.name}:${plugin.version}. ${error.message}`);
+            this.messageService.error(`Unable to install plugin '${plugin.publisher}/${plugin.name}/${plugin.version}'. ${error.message}`);
             return false;
         }
     }
@@ -212,7 +212,7 @@ export class ChePluginManager {
             // remove the plugin from workspace configuration
             await this.chePluginService.removePlugin(plugin.key);
             await this.delay(1000);
-            this.messageService.info(`Plugin ${plugin.name}:${plugin.version} has been successfully removed`);
+            this.messageService.info(`Plugin '${plugin.publisher}/${plugin.name}/${plugin.version}' has been successfully removed`);
 
             // remove the plugin from the list of workspace plugins
             this.installedPlugins = this.installedPlugins.filter(p => p !== plugin.key);
@@ -221,7 +221,7 @@ export class ChePluginManager {
             this.notifyWorkspaceConfigurationChanged();
             return true;
         } catch (error) {
-            this.messageService.error(`Unable to remove plugin ${plugin.name}:${plugin.version}. ${error.message}`);
+            this.messageService.error(`Unable to remove plugin '${plugin.publisher}/${plugin.name}/${plugin.version}'. ${error.message}`);
             return false;
         }
     }

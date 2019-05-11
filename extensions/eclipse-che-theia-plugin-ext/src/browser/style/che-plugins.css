@@ -25,38 +25,76 @@
 .che-plugins-notification {
     position: relative;
     width: 100%;
-    height: 50px;
+    height: 46px;
 }
 
-.che-plugins-notification .theia-alert-message-container {
-    /* padding: 5px; */
-    /* padding-bottom: 10px; */
-    cursor: pointer;
-
-    padding-bottom: 10px;
-    padding-left: 1px;
-    padding-right: 1px;
+.che-plugins-notification .notification {
+    width: calc(100% - 2px);
+    height: 28px;
+    margin-top: 9px;
+    margin-bottom: 9px;
+    margin-left: 1px;
+    overflow: hidden;
+    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, opacity 500ms ease-in-out 0ms;
+    background-color: var(--theia-success-color0);
+    color: #FFFFFF;
 }
 
-.che-plugins-notification .theia-success-alert {
-    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-    /* border-radius: 2px; */
-    padding: 7px;
+.che-plugins-notification .notification.hiding {
+    opacity: 0;
 }
 
-.che-plugins-notification .theia-success-alert:hover {
-    background-color: var(--theia-success-color1);
-}
-
-.che-plugins-notification .theia-success-alert:active {
-    box-shadow: 0px 0px 1px 1px var(--theia-success-color2);
-    outline: none;
-}
-
-.che-plugins-notification .theia-message-header {
+.che-plugins-notification .notification-message {
+    position: absolute;
+    left: 0px;
+    top: 9px;
+    right: 28px;
+    height: 28px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 28px;
+    padding-left: 9px;
+    cursor: pointer;
+}
+
+.che-plugins-notification .notification:hover {
+    background-color: var(--theia-success-color1);
+}
+
+.che-plugins-notification .notification:active {
+    box-shadow: 0px 0px 2px 0px var(--theia-success-color2);
+    outline: none;
+}
+
+.che-plugins-notification .notification-control {
+    position: absolute;
+    right: 1px;
+    top: 9px;
+    width: 28px;
+    height: 28px;
+    overflow: hidden;
+}
+
+.che-plugins-notification .notification-close {
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    width: 20px;
+    height: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    text-align: center;
+    line-height: 20px;
+    opacity: 0.7;
+}
+
+.che-plugins-notification .notification-close:hover {
+    opacity: 1;
+}
+
+.che-plugins-notification .notification-close:active {
+    opacity: 0.8;
 }
 
 /*-----------------------------------------------------------------------------

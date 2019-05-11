@@ -27,20 +27,6 @@ const yaml = require('js-yaml');
  * https://che-plugin-registry.openshift.io/plugins/
  */
 export interface ChePluginMetadataInternal {
-
-    // {
-    // "id": "che-incubator/theia-dev/0.0.1",
-    // "displayName": "Che Theia Dev Plugin",
-    // "version": "0.0.1",
-    // "type": "Che Plugin",
-    // "name": "theia-dev",
-    // "description": "Che Theia Dev Plugin",
-    // "publisher": "che-incubator",
-    // "links": {
-    //      "self": "/v2/plugins/che-incubator/theia-dev/0.0.1"
-    //  }
-    // },
-
     id: string,
     displayName: string,
     version: string,
@@ -76,7 +62,6 @@ export class ChePluginServiceImpl implements ChePluginService {
             const workpsaceSettings: WorkspaceSettings = await this.cheApiService.getWorkspaceSettings();
             if (workpsaceSettings && workpsaceSettings['cheWorkspacePluginRegistryUrl']) {
                 let uri = workpsaceSettings['cheWorkspacePluginRegistryUrl'];
-                console.log('>> DEFAULT PLUGIN REGISTRY URI: ', uri);
 
                 if (uri.endsWith('/')) {
                     uri = uri.substring(0, uri.length - 1);
@@ -194,11 +179,32 @@ export class ChePluginServiceImpl implements ChePluginService {
         return uri;
     }
 
+    private async loadPluginYaml(yamlURI: string): Promise<ChePluginMetadata> {
+        const noCache = { headers: { 'Cache-Control': 'no-cache' } };
+
+        let err;
+        try {
+            const data = (await this.axiosInstance.get<ChePluginMetadata[]>(yamlURI, noCache)).data;
+            return yaml.safeLoad(data);
+        } catch (error) {
+            err = error;
+        }
+
+        try {
+            if (!yamlURI.endsWith('/')) {
+                yamlURI += '/';
+            }
+            yamlURI += 'meta.yaml';
+            const data = (await this.axiosInstance.get<ChePluginMetadata[]>(yamlURI, noCache)).data;
+            return yaml.safeLoad(data);
+        } catch (error) {
+            return Promise.reject('Unable to load plugin metadata. ' + err.message);
+        }
+    }
+
     private async loadPluginMetadata(yamlURI: string, longKeyFormat: boolean): Promise<ChePluginMetadata> {
         try {
-            const noCache = { headers: { 'Cache-Control': 'no-cache' } };
-            const data = (await this.axiosInstance.get<ChePluginMetadata[]>(yamlURI, noCache)).data;
-            const props: ChePluginMetadata = yaml.safeLoad(data);
+            const props: ChePluginMetadata = await this.loadPluginYaml(yamlURI);
 
             // TODO: remove this field. Check for `type` field instead.
             const disabled: boolean = props.type === 'Che Editor';
@@ -215,19 +221,7 @@ export class ChePluginServiceImpl implements ChePluginService {
                 }
             }
 
-            // if (shortKeyFormat) {
-            //     // key = props.id + ':' + props.version;
-            //     key = `${props.publisher}/${props.name}/${props.version}`;
-            // } else {
-            //     const suffix = `${props.id}/${props.version}/meta.yaml`;
-            //     if (yamlURI.endsWith(suffix)) {
-            //         const uri = yamlURI.substring(0, yamlURI.length - suffix.length);
-            //         key = `${uri}${props.id}:${props.version}`;
-            //     }
-            // }
-
             return {
-                // id: props.id,
                 publisher: props.publisher,
                 name: props.name,
                 version: props.version,
@@ -244,28 +238,6 @@ export class ChePluginServiceImpl implements ChePluginService {
 
                 disabled: disabled,
                 key: key
-
-                // // id: string,
-                // publisher: string,
-                // name: string,
-                // version: string,
-                // type: string,
-                // displayName: string,
-                // title: string,
-                // description: string,
-                // icon: string,
-                // url: string,
-                // repository: string,
-                // firstPublicationDate: string,
-                // category: string,
-                // latestUpdateDate: string,
-
-                // // Remove this field. Check the `type` field instead.
-                // disabled: boolean,
-
-                // // Plugin KEY. Used to set in workpsace configuration
-                // key: string
-
             };
 
         } catch (error) {

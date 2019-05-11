@@ -427,7 +427,6 @@ export interface ChePluginRegistry {
  * Describes properties in plugin meta.yaml
  */
 export interface ChePluginMetadata {
-    // id: string,
     publisher: string,
     name: string,
     version: string,

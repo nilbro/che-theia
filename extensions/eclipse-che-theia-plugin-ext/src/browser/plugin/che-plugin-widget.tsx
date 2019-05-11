@@ -31,7 +31,9 @@ export class ChePluginWidget extends ReactWidget {
     protected status: 'ready' | 'loading' | 'failed' = 'loading';
 
     protected needToBeRendered = true;
+
     protected needToRestartWorkspace = false;
+    protected hidingRestartWorkspaceNotification = false;
 
     constructor(
         @inject(ChePluginManager) protected chePluginManager: ChePluginManager,
@@ -97,52 +99,34 @@ export class ChePluginWidget extends ReactWidget {
     }
 
     protected render(): React.ReactNode {
-        // // STATUS: loading
-        // if (this.status === 'loading') {
-        //     return <div className='spinnerContainer'>
-        //         <div className='fa fa-spinner fa-pulse fa-3x fa-fw'></div>
-        //     </div>;
-        // }
-
-        // // STATUS: failed
-        // if (this.status === 'failed') {
-        //     return <AlertMessage type='ERROR' header='Your registry is invalid' />;
-        // }
-
-        // // STATUS: ready
-        // if (!this.plugins.length) {
-        //     return <AlertMessage type='INFO' header='No plugins currently available' />;
-        // }
-
         return <React.Fragment>
             {this.renderUpdateWorkspaceControl()}
             <ChePluginListControls chePluginMenu={this.chePluginMenu} />
             {this.renderPluginList()}
         </React.Fragment>;
-
-        // {this.renderPluginControls()}
     }
 
     protected renderUpdateWorkspaceControl(): React.ReactNode {
         if (this.needToRestartWorkspace) {
-            return <div className='che-plugins-notification' onClick={this.restartWorkspace}>
-                <AlertMessage type='SUCCESS' header='Restart your workspace to apply changes.' />
+            const notificationStyle = this.hidingRestartWorkspaceNotification ? 'notification hiding' : 'notification';
+            return <div className='che-plugins-notification' >
+                <div className={notificationStyle}>
+                    <div className='notification-message' onClick={this.restartWorkspace}>
+                        <i className='fa fa-check-circle'></i>&nbsp;
+                        Restart your workspace to apply changes
+                    </div>
+
+                    <div className='notification-control'>
+                        <div className='notification-close' onClick={this.closeNotification}>
+                            <i className='fa fa-close alert-close' ></i>
+                        </div>
+                    </div>
+                </div>
             </div>;
         }
 
         return undefined;
     }
-
-    // protected renderPluginControls(): React.ReactNode {
-    //     return <div className='che-plugin-control-panel'>
-    //         <div>
-    //             <input className='search' type='text' />
-    //             <div className='menu'>
-    //                 <i className='fa fa-ellipsis-v'></i>
-    //             </div>
-    //         </div>
-    //     </div>;
-    // }
 
     protected renderPluginList(): React.ReactNode {
         // STATUS: loading
@@ -170,8 +154,19 @@ export class ChePluginWidget extends ReactWidget {
         </div>;
     }
 
-    protected restartWorkspace = async () => {
+    protected restartWorkspace = async e => {
         await this.chePluginManager.restartWorkspace();
+    }
+
+    protected closeNotification = async e => {
+        this.hidingRestartWorkspaceNotification = true;
+        this.update();
+
+        setTimeout(() => {
+            this.needToRestartWorkspace = false;
+            this.hidingRestartWorkspaceNotification = false;
+            this.update();
+        }, 500);
     }
 
 }
