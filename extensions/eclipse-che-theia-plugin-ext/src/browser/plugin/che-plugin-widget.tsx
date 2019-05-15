@@ -23,6 +23,9 @@ import { ChePluginRegistry, ChePluginMetadata } from '../../common/che-protocol'
 import { ChePluginManager } from './che-plugin-manager';
 import { ChePluginMenu } from './che-plugin-menu';
 
+// import { Widget, Message, BaseWidget, Key, StatefulWidget, MessageLoop } from '@theia/core/lib/browser';
+import { Key } from '@theia/core/lib/browser';
+
 @injectable()
 export class ChePluginWidget extends ReactWidget {
 
@@ -34,6 +37,8 @@ export class ChePluginWidget extends ReactWidget {
 
     protected needToRestartWorkspace = false;
     protected hidingRestartWorkspaceNotification = false;
+
+    protected currentFilter: string;
 
     constructor(
         @inject(ChePluginManager) protected chePluginManager: ChePluginManager,
@@ -54,6 +59,9 @@ export class ChePluginWidget extends ReactWidget {
 
         chePluginManager.onWorkspaceConfigurationChanged(
             needToRestart => this.onWorkspaceConfigurationChanged(needToRestart));
+
+        chePluginManager.onFilterChanged(
+            filter => this.updateFilter(filter, true));
     }
 
     protected onAfterShow(msg: Message) {
@@ -77,7 +85,7 @@ export class ChePluginWidget extends ReactWidget {
         this.status = 'loading';
         this.update();
 
-        await this.updatePlugins(registry);
+        await this.updatePlugins();
     }
 
     protected async onWorkspaceConfigurationChanged(needToRestart: boolean): Promise<void> {
@@ -87,9 +95,20 @@ export class ChePluginWidget extends ReactWidget {
         }
     }
 
-    protected async updatePlugins(registry?: ChePluginRegistry): Promise<void> {
+    protected updateFilter = async (filter: string, reloadPlugins: boolean) => {
+        this.currentFilter = filter;
+
+        if (reloadPlugins) {
+            this.status = 'loading';
+            this.update();
+
+            this.updatePlugins();
+        }
+    }
+
+    protected async updatePlugins(): Promise<void> {
         try {
-            this.plugins = await this.chePluginManager.getPlugins();
+            this.plugins = await this.chePluginManager.getPlugins(this.currentFilter);
             this.status = 'ready';
         } catch (error) {
             this.status = 'failed';
@@ -99,14 +118,19 @@ export class ChePluginWidget extends ReactWidget {
     }
 
     protected render(): React.ReactNode {
+        const chePluginListControls = <ChePluginListControls
+            chePluginMenu={this.chePluginMenu}
+            filter={this.currentFilter}
+            update={this.updateFilter} />;
+
         return <React.Fragment>
-            {this.renderUpdateWorkspaceControl()}
-            <ChePluginListControls chePluginMenu={this.chePluginMenu} />
+            {this.renderUpdateWorkspaceNotification()}
+            {chePluginListControls}
             {this.renderPluginList()}
         </React.Fragment>;
     }
 
-    protected renderUpdateWorkspaceControl(): React.ReactNode {
+    protected renderUpdateWorkspaceNotification(): React.ReactNode {
         if (this.needToRestartWorkspace) {
             const notificationStyle = this.hidingRestartWorkspaceNotification ? 'notification hiding' : 'notification';
             return <div className='che-plugins-notification' >
@@ -117,7 +141,7 @@ export class ChePluginWidget extends ReactWidget {
                     </div>
 
                     <div className='notification-control'>
-                        <div className='notification-close' onClick={this.closeNotification}>
+                        <div className='notification-hide' onClick={this.hideNotification}>
                             <i className='fa fa-close alert-close' ></i>
                         </div>
                     </div>
@@ -158,7 +182,7 @@ export class ChePluginWidget extends ReactWidget {
         await this.chePluginManager.restartWorkspace();
     }
 
-    protected closeNotification = async e => {
+    protected hideNotification = async e => {
         this.hidingRestartWorkspaceNotification = true;
         this.update();
 
@@ -171,26 +195,92 @@ export class ChePluginWidget extends ReactWidget {
 
 }
 
-export class ChePluginListControls extends React.Component<{ chePluginMenu: ChePluginMenu }, { menuButtonPressed: boolean }> {
+export class ChePluginListControls extends React.Component<
+    { chePluginMenu: ChePluginMenu, filter: string, update: (filter: string, reloadPlugins: boolean) => void },
+    { menuButtonPressed: boolean, filter: string }> {
 
-    constructor(props: { chePluginMenu: ChePluginMenu }) {
+    constructor(props: { chePluginMenu: ChePluginMenu, filter: string, update: (filter: string, reloadPlugins: boolean) => void }) {
         super(props);
 
         this.state = {
-            menuButtonPressed: false
+            menuButtonPressed: false,
+            filter: props.filter
         };
 
         props.chePluginMenu.onMenuClosed(() => {
             this.setState({
-                menuButtonPressed: false
+                menuButtonPressed: false,
+                filter: this.state.filter
             });
         });
     }
 
+    protected readonly doFilter = (e: React.KeyboardEvent) => {
+        if (e.target) {
+            console.log('>> DO FILTER....');
+
+            if (Key.ENTER.keyCode === e.keyCode) {
+                const filter = (e.target as HTMLInputElement).value;
+                console.log('>>> DO FILTER WITH FILTER [' + filter + ']');
+                this.props.update(filter, true);
+            }
+
+            // if (Key.ENTER.keyCode === e.keyCode) {
+            //     // this.resultTreeWidget.focusFirstResult();
+            // } else {
+            //     this.searchTerm = (e.target as HTMLInputElement).value;
+            //     this.resultTreeWidget.search(this.searchTerm, (this.searchInWorkspaceOptions || {}));
+            //     this.update();
+            // }
+        }
+    }
+
+    protected readonly handleChange = event => {
+        console.log('>> handle change... event.keyCode: ' + event.keyCode);
+
+        if (event.target) {
+            this.setState(
+                {
+                    menuButtonPressed: false,
+                    filter: event.target.value
+                });
+
+            this.props.update(event.target.value, false);
+            // const updatePlugins = Key.ENTER.keyCode === event.keyCode;
+            // if (updatePlugins) {
+            // }
+        }
+    }
+
+    defaultFilter: string;
+
     render(): React.ReactNode {
+        let value;
+        if (this.props.filter !== undefined && this.props.filter !== this.defaultFilter) {
+            this.defaultFilter = this.props.filter;
+            value = this.props.filter;
+            this.state = {
+                menuButtonPressed: this.state.menuButtonPressed,
+                filter: value
+            };
+        } else {
+            value = this.state.filter;
+        }
+
+        // onKeyUp={this.doFilter}
+        // defaultValue={this.props.filter}
+        // value={this.state.filter}
+        const input = <input
+            className='search'
+            type='text'
+            value={value}
+            onChange={this.handleChange}
+            onKeyUp={this.doFilter}
+        />;
+
         return <div className='che-plugin-control-panel'>
             <div>
-                <input className='search' type='text' />
+                {input}
                 <div tabIndex={0} className={this.menuButtonStyle()} onFocus={this.onFocus} >
                     <i className='fa fa-ellipsis-v'></i>
                 </div>
@@ -213,7 +303,8 @@ export class ChePluginListControls extends React.Component<{ chePluginMenu: CheP
         const top = rect.top + rect.height - 2;
 
         this.setState({
-            menuButtonPressed: true
+            menuButtonPressed: true,
+            filter: this.state.filter
         });
 
         this.props.chePluginMenu.show(left, top);

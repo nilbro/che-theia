@@ -107,21 +107,30 @@ export class ChePluginCommandContribution implements CommandContribution {
     // @category:linters
     // @category:snippets
 
-    // @category:che_editor
-    // @category:che_plugin
-    // @category:theia_plugin
-    // @category:vs_code_extension
+    // @type:che_editor
+    // @type:che_plugin
+    // @type:theia_plugin
+    // @type:vs_code_extension
 
     //
     async showAvailablePlugins() {
+        console.log('>> showAvailablePlugins');
+
+        this.chePluginManager.changeFilter('', true);
     }
 
     // @installed
     async showInstalledPlugins() {
+        console.log('>> showInstalledPlugins');
+
+        this.chePluginManager.changeFilter('@installed', true);
     }
 
-    // @category:che_editor
+    // @type:che_editor
     async showEditors() {
+        console.log('>> showEditors');
+
+        this.chePluginManager.changeFilter('@type:che_editor', true);
     }
 
     // @builtin

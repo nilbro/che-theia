@@ -60,7 +60,7 @@ export class ChePluginMenu {
 
         commands.addCommand(ChePluginManagerCommands.SHOW_AVAILABLE_PLUGINS.id, {
             label: ChePluginManagerCommands.SHOW_AVAILABLE_PLUGINS.label,
-            isEnabled: () => false,
+            isEnabled: () => true,
             // isToggled: () => true,
             // isEnabled: () => false,
             execute: () => setTimeout(() => this.chePluginCommandContribution.showAvailablePlugins(), 100)
@@ -68,13 +68,13 @@ export class ChePluginMenu {
 
         commands.addCommand(ChePluginManagerCommands.SHOW_INSTALLED_PLUGINS.id, {
             label: ChePluginManagerCommands.SHOW_INSTALLED_PLUGINS.label,
-            isEnabled: () => false,
+            isEnabled: () => true,
             execute: () => setTimeout(() => this.chePluginCommandContribution.showInstalledPlugins(), 100)
         });
 
         commands.addCommand(ChePluginManagerCommands.SHOW_EDITORS.id, {
             label: ChePluginManagerCommands.SHOW_EDITORS.label,
-            isEnabled: () => false,
+            isEnabled: () => true,
             execute: () => setTimeout(() => this.chePluginCommandContribution.showEditors(), 100)
         });
 

@@ -173,14 +173,14 @@ export class ChePluginManager {
     /**
      * Returns plugin list from active registry
      */
-    async getPlugins(): Promise<ChePluginMetadata[]> {
+    async getPlugins(filter: string): Promise<ChePluginMetadata[]> {
         // get list of deployed plugins from runtime
         // will be used in the future
         // const metadata = await this.hostedPluginServer.getDeployedMetadata();
 
         await this.initDefaults();
 
-        this.availablePlugins = await this.chePluginService.getPlugins(this.activeRegistry);
+        this.availablePlugins = await this.chePluginService.getPlugins(this.activeRegistry, filter);
         return this.availablePlugins;
     }
 
@@ -258,6 +258,20 @@ export class ChePluginManager {
             } catch (error) {
                 this.messageService.error(`Unable to restart your workspace. ${error.message}`);
             }
+        }
+    }
+
+    protected readonly filterChanged = new Emitter<string>();
+
+    get onFilterChanged(): Event<string> {
+        return this.filterChanged.event;
+    }
+
+    async changeFilter(filter: string, sendNotification: boolean = false) {
+        console.log('>> filterChanged [' + filter + '] send notification [' + sendNotification + ']');
+
+        if (sendNotification) {
+            this.filterChanged.fire(filter);
         }
     }
 

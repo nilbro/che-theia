@@ -93,17 +93,105 @@ export class ChePluginServiceImpl implements ChePluginService {
         }
     }
 
+    // @installed
+    // @builtin
+    // @enabled
+    // @disabled
+    hasType(filter: string, type: string) {
+        const filters = filter.split(' ');
+        const found = filters.find(value => value === type);
+        return found !== undefined;
+    }
+
+    filterByType(plugins: ChePluginMetadata[], type: string): ChePluginMetadata[] {
+        console.log('            > filter by type [' + type + ']');
+
+        return plugins.filter(plugin => {
+            const regex = / /gi;
+            const t = plugin.type.toLowerCase().replace(regex, '_');
+            // console.log('                > use type [' + t + ']');
+            return t === type;
+        });
+    }
+
+    filterByText(plugins: ChePluginMetadata[], text: string): ChePluginMetadata[] {
+        return plugins;
+    }
+
+    filter(plugins: ChePluginMetadata[], filter: string): ChePluginMetadata[] {
+        console.log('    >> filter plugins !!!');
+
+        let filteredPlugins = plugins;
+        const filters = filter.split(' ');
+
+        filters.forEach(f => {
+            console.log('        > f: [' + f + ']');
+
+            if (f.startsWith('@')) {
+                if (f.startsWith('@type:')) {
+                    const type = f.substring('@type:'.length);
+                    filteredPlugins = this.filterByType(filteredPlugins, type);
+                } else {
+                    console.log('            > skip [' + f + ']');
+                }
+            } else {
+                filteredPlugins = this.filterByText(filteredPlugins, f);
+            }
+        });
+
+        return filteredPlugins;
+    }
+
     /**
      * Returns a list of available plugins on the plugin registry.
      *
      * @param registry ChePluginRegistry plugin registry
+     * @param filter filter
      * @return list of available plugins
      */
-    async getPlugins(registry: ChePluginRegistry): Promise<ChePluginMetadata[]> {
+    async getPlugins(registry: ChePluginRegistry, filter: string): Promise<ChePluginMetadata[]> {
+        await new Promise(resolve => { setTimeout(() => { resolve(); }, 3000); });
+
+        console.log('-----------------------------------------------------------------------------------------');
+        console.log('>> GET PLUGINS');
+
         // ensure default plugin registry URI is set
         if (!this.defaultRegistry) {
             await this.getDefaultRegistry();
         }
+
+        // console.log('> FILTER', filter);
+
+        let pluginList;
+        if (filter) {
+            if (this.hasType(filter, '@installed')) {
+                pluginList = await this.getInstalledPlugins(registry);
+            } else {
+                pluginList = await this.getAllPlugins(registry);
+            }
+
+            pluginList = this.filter(pluginList, filter);
+        } else {
+            pluginList = this.getAllPlugins(registry);
+        }
+
+        console.log('>> returning result');
+        return pluginList;
+
+        // const longKeyFormat = registry.uri !== this.defaultRegistry.uri;
+        // const plugins: ChePluginMetadata[] = await Promise.all(
+        //     marketplacePlugins.map(async marketplacePlugin => {
+        //         const pluginYamlURI = this.getPluginYampURI(registry, marketplacePlugin);
+        //         return await this.loadPluginMetadata(pluginYamlURI, longKeyFormat);
+        //     }
+        //     ));
+
+        // return plugins.filter(plugin => plugin !== null && plugin !== undefined);
+    }
+
+    // has no prefix
+    async getAllPlugins(registry: ChePluginRegistry): Promise<ChePluginMetadata[]> {
+        console.log('    >> getAllPlugins');
 
         // Get list of ChePluginMetadataInternal from plugin registry
         const marketplacePlugins = await this.loadPluginList(registry);
@@ -120,6 +208,17 @@ export class ChePluginServiceImpl implements ChePluginService {
             ));
 
         return plugins.filter(plugin => plugin !== null && plugin !== undefined);
+    }
+
+    // has prefix @installed
+    async getInstalledPlugins(registry: ChePluginRegistry): Promise<ChePluginMetadata[]> {
+        console.log('    >> getInstalledPlugins');
+
+        const pluginList = await this.getAllPlugins(registry);
+        const workspacePlugins = await this.getWorkspacePlugins();
+        console.log('    >> workspace plugins ', workspacePlugins);
+
+        return pluginList;
     }
 
     /**

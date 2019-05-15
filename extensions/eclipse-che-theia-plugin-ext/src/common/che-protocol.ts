@@ -477,9 +477,10 @@ export interface ChePluginService {
      * Returns a list of available plugins on the plugin registry.
      *
      * @param registry ChePluginRegistry plugin registry
+     * @param filter filter
      * @return list of available plugins
      */
-    getPlugins(registry: ChePluginRegistry): Promise<ChePluginMetadata[]>;
+    getPlugins(registry: ChePluginRegistry, filter: string): Promise<ChePluginMetadata[]>;
 
     /**
      * Returns list of plugins described in workspace configuration.

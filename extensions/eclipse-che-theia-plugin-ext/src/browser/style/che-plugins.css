@@ -76,7 +76,7 @@
     overflow: hidden;
 }
 
-.che-plugins-notification .notification-close {
+.che-plugins-notification .notification-hide {
     position: absolute;
     left: 4px;
     top: 4px;
@@ -89,11 +89,11 @@
     opacity: 0.7;
 }
 
-.che-plugins-notification .notification-close:hover {
+.che-plugins-notification .notification-hide:hover {
     opacity: 1;
 }
 
-.che-plugins-notification .notification-close:active {
+.che-plugins-notification .notification-hide:active {
     opacity: 0.8;
 }
 

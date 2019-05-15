@@ -82,6 +82,8 @@ containers:
    env:
        - name: THEIA_PLUGINS
          value: local-dir:///plugins
+       - name: VSX_PLUGINS
+         value: local-dir:///vsx-plugins
        - name: HOSTED_PLUGIN_HOSTNAME
          value: 0.0.0.0
        - name: HOSTED_PLUGIN_PORT
@@ -89,6 +91,8 @@ containers:
    volumes:
        - mountPath: "/plugins"
          name: plugins
+       - mountPath: "/vsx-plugins"
+         name: vsx-plugins
        - mountPath: "/projects"
          name: projects
    ports:
