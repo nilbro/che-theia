@@ -98,9 +98,13 @@ export class ChePluginServiceImpl implements ChePluginService {
     // @enabled
     // @disabled
     hasType(filter: string, type: string) {
-        const filters = filter.split(' ');
-        const found = filters.find(value => value === type);
-        return found !== undefined;
+        if (filter) {
+            const filters = filter.split(' ');
+            const found = filters.find(value => value === type);
+            return found !== undefined;
+        }
+
+        return false;
     }
 
     filterByType(plugins: ChePluginMetadata[], type: string): ChePluginMetadata[] {
@@ -127,19 +131,42 @@ export class ChePluginServiceImpl implements ChePluginService {
         filters.forEach(f => {
             console.log('        > f: [' + f + ']');
 
-            if (f.startsWith('@')) {
-                if (f.startsWith('@type:')) {
-                    const type = f.substring('@type:'.length);
-                    filteredPlugins = this.filterByType(filteredPlugins, type);
+            if (f) {
+                if (f.startsWith('@')) {
+                    if (f.startsWith('@type:')) {
+                        const type = f.substring('@type:'.length);
+                        filteredPlugins = this.filterByType(filteredPlugins, type);
+                    } else {
+                        console.log('            > skip [' + f + ']');
+                    }
                 } else {
-                    console.log('            > skip [' + f + ']');
+                    filteredPlugins = this.filterByText(filteredPlugins, f);
                 }
-            } else {
-                filteredPlugins = this.filterByText(filteredPlugins, f);
             }
         });
 
         return filteredPlugins;
+    }
+
+    /**
+     * Removes plugins with type 'Che Editor' if type '@type:che_editor' is not set
+     */
+    squeezeOutEditors(plugins: ChePluginMetadata[], filter: string): ChePluginMetadata[] {
+        // do not filter if user requested list of editors
+        // console.log('>> squeezeOutEditors.........');
+
+        if (this.hasType(filter, '@type:che_editor')) {
+            return plugins;
+        }
+
+        return plugins.filter(plugin => 'Che Editor' !== plugin.type);
+        // const filteredPlugins = plugins.filter(plugin => {
+        //     console.log('   > plugin ', plugin.key);
+        //     return false;
+        // });
+        // console.log('> filtered plugins ', filteredPlugins);
+
+        // return plugins;
     }
 
     /**
@@ -150,10 +177,14 @@ export class ChePluginServiceImpl implements ChePluginService {
      * @return list of available plugins
      */
     async getPlugins(registry: ChePluginRegistry, filter: string): Promise<ChePluginMetadata[]> {
-        await new Promise(resolve => { setTimeout(() => { resolve(); }, 3000); });
+        await new Promise(resolve => { setTimeout(() => { resolve(); }, 1000); });
 
+        console.log('');
         console.log('-----------------------------------------------------------------------------------------');
         console.log('>> GET PLUGINS');
+        console.log('');
+
+        await new Promise(resolve => { setTimeout(() => { resolve(); }, 1000); });
 
         // ensure default plugin registry URI is set
         if (!this.defaultRegistry) {
@@ -165,31 +196,23 @@ export class ChePluginServiceImpl implements ChePluginService {
         let pluginList;
         if (filter) {
             if (this.hasType(filter, '@installed')) {
-                pluginList = await this.getInstalledPlugins(registry);
+                pluginList = await this.getInstalledPlugins();
             } else {
                 pluginList = await this.getAllPlugins(registry);
             }
 
             pluginList = this.filter(pluginList, filter);
         } else {
-            pluginList = this.getAllPlugins(registry);
+            pluginList = await this.getAllPlugins(registry);
         }
 
-        console.log('>> returning result');
+        // remove che_editor if type @type:che_editor is not set
+        pluginList = this.squeezeOutEditors(pluginList, filter);
+
         return pluginList;
-
-        // const longKeyFormat = registry.uri !== this.defaultRegistry.uri;
-        // const plugins: ChePluginMetadata[] = await Promise.all(
-        //     marketplacePlugins.map(async marketplacePlugin => {
-        //         const pluginYamlURI = this.getPluginYampURI(registry, marketplacePlugin);
-        //         return await this.loadPluginMetadata(pluginYamlURI, longKeyFormat);
-        //     }
-        //     ));
-
-        // return plugins.filter(plugin => plugin !== null && plugin !== undefined);
     }
 
-    // has no prefix
+    // without prefix
     async getAllPlugins(registry: ChePluginRegistry): Promise<ChePluginMetadata[]> {
         console.log('    >> getAllPlugins');
 
@@ -211,14 +234,49 @@ export class ChePluginServiceImpl implements ChePluginService {
     }
 
     // has prefix @installed
-    async getInstalledPlugins(registry: ChePluginRegistry): Promise<ChePluginMetadata[]> {
+    async getInstalledPlugins(): Promise<ChePluginMetadata[]> {
         console.log('    >> getInstalledPlugins');
 
-        const pluginList = await this.getAllPlugins(registry);
-        const workspacePlugins = await this.getWorkspacePlugins();
-        console.log('    >> workspace plugins ', workspacePlugins);
+        // const pluginList = await this.getAllPlugins(registry);
 
-        return pluginList;
+        const workspacePlugins = await this.getWorkspacePlugins();
+        // console.log('    >> workspace plugins ', workspacePlugins);
+
+        const plugins: ChePluginMetadata[] = await Promise.all(
+            workspacePlugins.map(async workspacePlugin => {
+                console.log('        > workspace plugin [' + workspacePlugin + ']');
+                // const pluginYamlURI = this.getPluginYampURI(registry, marketplacePlugin);
+                // return await this.loadPluginMetadata(pluginYamlURI, longKeyFormat);
+
+                let pluginYamlURI;
+                let longKeyFormat = false;
+                if (workspacePlugin.startsWith('http://') || workspacePlugin.startsWith('https://')) {
+                    // /vitaliy-guliy/che-theia-plugin-registry/master/plugins/org.eclipse.che.samples.hello-world-frontend-plugin/0.0.1/meta.yaml
+                    // /v2/plugins/che-incubator/typescript/1.30.2
+                    // const uri = new URI(registry.uri);
+                    // return `${uri.scheme}://${uri.authority}${self}`;
+                    pluginYamlURI = `${workspacePlugin}/meta.yaml`;
+                    longKeyFormat = true;
+                } else {
+                    // const base = this.getBaseDirectory(registry);
+                    // org.eclipse.che.samples.hello-world-frontend-plugin/0.0.1/meta.yaml
+                    // che-incubator/typescript/1.30.2
+                    // return `${base}${self}`;
+                    let uri = this.defaultRegistry.uri;
+                    if (uri.endsWith('/')) {
+                        uri = uri.substring(0, uri.length - 1);
+                    }
+
+                    pluginYamlURI = `${uri}/${workspacePlugin}/meta.yaml`;
+                }
+                console.log('        > plugin yaml URI  [' + pluginYamlURI + ']');
+
+                return await this.loadPluginMetadata(pluginYamlURI, longKeyFormat);
+                // return undefined;
+            }
+            ));
+
+        return plugins.filter(plugin => plugin !== null && plugin !== undefined);
     }
 
     /**
@@ -306,7 +364,7 @@ export class ChePluginServiceImpl implements ChePluginService {
             const props: ChePluginMetadata = await this.loadPluginYaml(yamlURI);
 
             // TODO: remove this field. Check for `type` field instead.
-            const disabled: boolean = props.type === 'Che Editor';
+            // const disabled: boolean = props.type === 'Che Editor';
 
             // let key: string;
             let key = `${props.publisher}/${props.name}/${props.version}`;
@@ -334,8 +392,7 @@ export class ChePluginServiceImpl implements ChePluginService {
                 firstPublicationDate: props.firstPublicationDate,
                 category: props.category,
                 latestUpdateDate: props.latestUpdateDate,
-
-                disabled: disabled,
+                // disabled: disabled,
                 key: key
             };
 

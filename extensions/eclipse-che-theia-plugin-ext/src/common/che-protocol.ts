@@ -442,7 +442,7 @@ export interface ChePluginMetadata {
     latestUpdateDate: string,
 
     // Remove this field. Check the `type` field instead.
-    disabled: boolean,
+    // disabled: boolean,
 
     // Plugin KEY. Used to set in workpsace configuration
     key: string

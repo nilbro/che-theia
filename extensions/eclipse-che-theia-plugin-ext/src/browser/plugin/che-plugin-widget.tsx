@@ -355,9 +355,9 @@ export class ChePlugin extends React.Component<ChePlugin.Props, ChePlugin.State>
     }
 
     protected renderPluginAction(plugin: ChePluginMetadata): React.ReactNode {
-        if (plugin.disabled) {
-            return undefined;
-        }
+        // if (plugin.disabled) {
+        //     return undefined;
+        // }
 
         switch (this.state.pluginState) {
             case 'installed':
