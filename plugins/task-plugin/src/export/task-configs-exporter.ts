@@ -20,7 +20,7 @@ const formattingOptions = { tabSize: 4, insertSpaces: true, eol: '' };
 
 export const VSCODE_TASK_TYPE = 'vscode-task';
 
-/** Reads the commands from the current Che workspace and exports configurations of tasks in the config file. */
+/** Exports configurations of tasks in the config file. */
 @injectable()
 export class TaskConfigurationsExporter implements ConfigurationsExporter {
     readonly type: string = VSCODE_TASK_TYPE;

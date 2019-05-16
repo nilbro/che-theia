@@ -15,12 +15,21 @@ import { che as cheApi } from '@eclipse-che/api';
 
 export const ConfigurationsExporter = Symbol('ConfigurationsExporter');
 
+/** Exports content with configurations in the config file */
 export interface ConfigurationsExporter {
+
+    /** Type of configurations for export */
     readonly type: string;
+
+    /**
+     * Exports given content with configurations in the config file given workspace folder
+     * @param configsContent content with configurations for export
+     * @param workspaceFolder workspace folder for exporting configs in the config file
+     */
     export(configsContent: string, workspaceFolder: theia.WorkspaceFolder): void;
 }
 
-/** Reads the commands from the current Che workspace and exports configurations in the config files. */
+/** Reads the commands from the current Che workspace and exports task and launch configurations in the config files. */
 @injectable()
 export class ExportConfigurationsManager {
 

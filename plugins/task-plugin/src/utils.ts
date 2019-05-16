@@ -39,7 +39,9 @@ export function applySegmentsToUri(endPointUrl: string, ...pathSegements: string
     return urlToTransform.toString();
 }
 
-export function parse(content: string) {
+/** Parses the given content and returns the object the JSON content represents. */
+// tslint:disable-next-line:no-any
+export function parse(content: string): any {
     const strippedContent = jsoncparser.stripComments(content);
     const errors: ParseError[] = [];
     const configurations = jsoncparser.parse(strippedContent, errors);
@@ -54,17 +56,27 @@ export function parse(content: string) {
     }
 }
 
+/** Formats content according to given formatting  options */
 export function format(content: string, options: FormattingOptions): string {
     const edits = jsoncparser.format(content, undefined, options);
     return jsoncparser.applyEdits(content, edits);
 }
 
+/**
+ * Modifies JSON document using json path, value and options.
+ *
+ * @param content JSON document for changes
+ * @param jsonPath path of the value to change - the document root, a property or an array item.
+ * @param value new value for the specified property or item.
+ * @param options options to apply formatting
+ */
 // tslint:disable-next-line:no-any
 export function modify(content: string, jsonPath: JSONPath, value: any, options: FormattingOptions): string {
     const edits = jsoncparser.modify(content, jsonPath, value, { formattingOptions: options });
     return jsoncparser.applyEdits(content, edits);
 }
 
+/** Synchronously reads the file by given path. Returns content of the file or empty string if file doesn't exist */
 export function readFileSync(filePath: string): string {
     try {
         return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
@@ -74,12 +86,14 @@ export function readFileSync(filePath: string): string {
     }
 }
 
-export function writeFileSync(configFilePath: string, content: string): void {
-    this.ensureConfigDirExistence(configFilePath);
-    fs.writeFileSync(configFilePath, content);
+/** Synchronously writes  given content to the file. Creates directories to the file if they don't exist */
+export function writeFileSync(filePath: string, content: string): void {
+    this.ensureConfigDirExistence(filePath);
+    fs.writeFileSync(filePath, content);
 }
 
-export function ensureConfigDirExistence(filePath: string) {
+/** Synchronously creates a directory to the file if they don't exist */
+export function ensureDirExistence(filePath: string) {
     const dirName = path.dirname(filePath);
     if (fs.existsSync(dirName)) {
         return true;

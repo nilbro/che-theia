@@ -20,7 +20,7 @@ const formattingOptions = { tabSize: 4, insertSpaces: true, eol: '' };
 
 export const VSCODE_LAUNCH_TYPE = 'vscode-launch';
 
-/** Reads the commands from the current Che workspace and exports launch configurations in the config file. */
+/** Exports content with launch configurations in the config file. */
 @injectable()
 export class LaunchConfigurationsExporter implements ConfigurationsExporter {
     readonly type: string = VSCODE_LAUNCH_TYPE;
