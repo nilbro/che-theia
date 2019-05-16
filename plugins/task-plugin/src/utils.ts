@@ -88,7 +88,7 @@ export function readFileSync(filePath: string): string {
 
 /** Synchronously writes  given content to the file. Creates directories to the file if they don't exist */
 export function writeFileSync(filePath: string, content: string): void {
-    this.ensureConfigDirExistence(filePath);
+    ensureDirExistence(filePath);
     fs.writeFileSync(filePath, content);
 }
 
@@ -96,7 +96,7 @@ export function writeFileSync(filePath: string, content: string): void {
 export function ensureDirExistence(filePath: string) {
     const dirName = path.dirname(filePath);
     if (fs.existsSync(dirName)) {
-        return true;
+        return;
     }
-    fs.mkdirSync(dirName);
+    fs.mkdirSync(dirName, { recursive: true });
 }

@@ -26,7 +26,7 @@ import { PreviewUrlOpenService } from './preview/preview-url-open-service';
 import { CheWorkspaceClient } from './che-workspace-client';
 import { LaunchConfigurationsExporter } from './export/launch-configs-exporter';
 import { TaskConfigurationsExporter } from './export/task-configs-exporter';
-import { ConfigurationsExporter } from './export/export-configs-manager';
+import { ConfigurationsExporter, ExportConfigurationsManager } from './export/export-configs-manager';
 
 const container = new Container();
 container.bind(CheTaskProvider).toSelf().inSingletonScope();
@@ -44,6 +44,7 @@ container.bind(CheTaskPreviewMode).toSelf().inSingletonScope();
 container.bind(PreviewUrlOpenService).toSelf().inSingletonScope();
 container.bind<ConfigurationsExporter>(ConfigurationsExporter).to(TaskConfigurationsExporter).inSingletonScope();
 container.bind<ConfigurationsExporter>(ConfigurationsExporter).to(LaunchConfigurationsExporter).inSingletonScope();
+container.bind(ExportConfigurationsManager).toSelf().inSingletonScope();
 
 container.bind(CheTerminalWidget).toSelf().inTransientScope();
 container.bind(TerminalWidgetFactory).toDynamicValue(ctx => ({

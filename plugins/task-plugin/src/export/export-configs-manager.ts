@@ -18,11 +18,11 @@ export const ConfigurationsExporter = Symbol('ConfigurationsExporter');
 /** Exports content with configurations in the config file */
 export interface ConfigurationsExporter {
 
-    /** Type of configurations for export */
+    /** Type of the exporter corresponds to type of command which brings content with configs */
     readonly type: string;
 
     /**
-     * Exports given content with configurations in the config file given workspace folder
+     * Exports given content with configurations in the config file of given workspace folder
      * @param configsContent content with configurations for export
      * @param workspaceFolder workspace folder for exporting configs in the config file
      */
@@ -46,11 +46,6 @@ export class ExportConfigurationsManager {
         }
 
         const cheCommands = await this.cheWorkspaceClient.getCommands();
-        if (cheCommands.length < 1) {
-            // TODO - remove???
-            return;
-        }
-
         for (const exporter of this.exporters) {
             const configsContent = this.extractConfigsContent(exporter.type, cheCommands);
             if (!configsContent) {
