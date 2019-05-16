@@ -11,7 +11,7 @@
 import { injectable, inject } from 'inversify';
 import { CheWorkspaceClient } from '../che-workspace-client';
 import { ReconnectingWebSocket } from './websocket';
-import { applySegmentsToUri } from '../uri-helper';
+import { applySegmentsToUri } from '../utils';
 import { MachineExecWatcher } from './machine-exec-watcher';
 import * as startPoint from '../task-plugin-backend';
 
