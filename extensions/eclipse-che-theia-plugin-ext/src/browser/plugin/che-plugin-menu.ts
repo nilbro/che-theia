@@ -18,7 +18,6 @@ import { injectable, inject } from 'inversify';
 import { Menu } from '@phosphor/widgets';
 import { CommandRegistry } from '@phosphor/commands';
 import { Emitter, Event } from '@theia/core/lib/common';
-// import { ChePluginRegistry } from '../../common/che-protocol';
 import { ChePluginManager } from './che-plugin-manager';
 
 import { ChePluginManagerCommands, ChePluginCommandContribution } from './che-plugin-command-contribution';

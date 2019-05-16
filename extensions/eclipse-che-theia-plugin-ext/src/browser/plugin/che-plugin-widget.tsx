@@ -199,6 +199,8 @@ export class ChePluginListControls extends React.Component<
     { chePluginMenu: ChePluginMenu, filter: string, update: (filter: string, reloadPlugins: boolean) => void },
     { menuButtonPressed: boolean, filter: string }> {
 
+    private defaultFilter: string;
+
     constructor(props: { chePluginMenu: ChePluginMenu, filter: string, update: (filter: string, reloadPlugins: boolean) => void }) {
         super(props);
 
@@ -217,27 +219,14 @@ export class ChePluginListControls extends React.Component<
 
     protected readonly doFilter = (e: React.KeyboardEvent) => {
         if (e.target) {
-            console.log('>> DO FILTER....');
-
             if (Key.ENTER.keyCode === e.keyCode) {
                 const filter = (e.target as HTMLInputElement).value;
-                console.log('>>> DO FILTER WITH FILTER [' + filter + ']');
                 this.props.update(filter, true);
             }
-
-            // if (Key.ENTER.keyCode === e.keyCode) {
-            //     // this.resultTreeWidget.focusFirstResult();
-            // } else {
-            //     this.searchTerm = (e.target as HTMLInputElement).value;
-            //     this.resultTreeWidget.search(this.searchTerm, (this.searchInWorkspaceOptions || {}));
-            //     this.update();
-            // }
         }
     }
 
     protected readonly handleChange = event => {
-        console.log('>> handle change... event.keyCode: ' + event.keyCode);
-
         if (event.target) {
             this.setState(
                 {
@@ -246,13 +235,8 @@ export class ChePluginListControls extends React.Component<
                 });
 
             this.props.update(event.target.value, false);
-            // const updatePlugins = Key.ENTER.keyCode === event.keyCode;
-            // if (updatePlugins) {
-            // }
         }
     }
-
-    defaultFilter: string;
 
     render(): React.ReactNode {
         let value;
@@ -355,9 +339,10 @@ export class ChePlugin extends React.Component<ChePlugin.Props, ChePlugin.State>
     }
 
     protected renderPluginAction(plugin: ChePluginMetadata): React.ReactNode {
-        // if (plugin.disabled) {
-        //     return undefined;
-        // }
+        // Don't show the button for 'Che Editor' plugins
+        if ('Che Editor' === plugin.type) {
+            return undefined;
+        }
 
         switch (this.state.pluginState) {
             case 'installed':

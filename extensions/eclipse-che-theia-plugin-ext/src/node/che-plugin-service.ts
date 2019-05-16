@@ -113,7 +113,6 @@ export class ChePluginServiceImpl implements ChePluginService {
         return plugins.filter(plugin => {
             const regex = / /gi;
             const t = plugin.type.toLowerCase().replace(regex, '_');
-            // console.log('                > use type [' + t + ']');
             return t === type;
         });
     }
@@ -153,20 +152,11 @@ export class ChePluginServiceImpl implements ChePluginService {
      */
     squeezeOutEditors(plugins: ChePluginMetadata[], filter: string): ChePluginMetadata[] {
         // do not filter if user requested list of editors
-        // console.log('>> squeezeOutEditors.........');
-
         if (this.hasType(filter, '@type:che_editor')) {
             return plugins;
         }
 
         return plugins.filter(plugin => 'Che Editor' !== plugin.type);
-        // const filteredPlugins = plugins.filter(plugin => {
-        //     console.log('   > plugin ', plugin.key);
-        //     return false;
-        // });
-        // console.log('> filtered plugins ', filteredPlugins);
-
-        // return plugins;
     }
 
     /**
@@ -177,21 +167,19 @@ export class ChePluginServiceImpl implements ChePluginService {
      * @return list of available plugins
      */
     async getPlugins(registry: ChePluginRegistry, filter: string): Promise<ChePluginMetadata[]> {
-        await new Promise(resolve => { setTimeout(() => { resolve(); }, 1000); });
+        await new Promise(resolve => { setTimeout(() => { resolve(); }, 100); });
 
         console.log('');
         console.log('-----------------------------------------------------------------------------------------');
         console.log('>> GET PLUGINS');
         console.log('');
 
-        await new Promise(resolve => { setTimeout(() => { resolve(); }, 1000); });
+        await new Promise(resolve => { setTimeout(() => { resolve(); }, 100); });
 
         // ensure default plugin registry URI is set
         if (!this.defaultRegistry) {
             await this.getDefaultRegistry();
         }
-
-        // console.log('> FILTER', filter);
 
         let pluginList;
         if (filter) {
@@ -237,31 +225,16 @@ export class ChePluginServiceImpl implements ChePluginService {
     async getInstalledPlugins(): Promise<ChePluginMetadata[]> {
         console.log('    >> getInstalledPlugins');
 
-        // const pluginList = await this.getAllPlugins(registry);
-
         const workspacePlugins = await this.getWorkspacePlugins();
-        // console.log('    >> workspace plugins ', workspacePlugins);
-
         const plugins: ChePluginMetadata[] = await Promise.all(
             workspacePlugins.map(async workspacePlugin => {
-                console.log('        > workspace plugin [' + workspacePlugin + ']');
-                // const pluginYamlURI = this.getPluginYampURI(registry, marketplacePlugin);
-                // return await this.loadPluginMetadata(pluginYamlURI, longKeyFormat);
-
                 let pluginYamlURI;
                 let longKeyFormat = false;
+
                 if (workspacePlugin.startsWith('http://') || workspacePlugin.startsWith('https://')) {
-                    // /vitaliy-guliy/che-theia-plugin-registry/master/plugins/org.eclipse.che.samples.hello-world-frontend-plugin/0.0.1/meta.yaml
-                    // /v2/plugins/che-incubator/typescript/1.30.2
-                    // const uri = new URI(registry.uri);
-                    // return `${uri.scheme}://${uri.authority}${self}`;
                     pluginYamlURI = `${workspacePlugin}/meta.yaml`;
                     longKeyFormat = true;
                 } else {
-                    // const base = this.getBaseDirectory(registry);
-                    // org.eclipse.che.samples.hello-world-frontend-plugin/0.0.1/meta.yaml
-                    // che-incubator/typescript/1.30.2
-                    // return `${base}${self}`;
                     let uri = this.defaultRegistry.uri;
                     if (uri.endsWith('/')) {
                         uri = uri.substring(0, uri.length - 1);
@@ -269,10 +242,9 @@ export class ChePluginServiceImpl implements ChePluginService {
 
                     pluginYamlURI = `${uri}/${workspacePlugin}/meta.yaml`;
                 }
-                console.log('        > plugin yaml URI  [' + pluginYamlURI + ']');
+                // console.log('        > plugin yaml URI  [' + pluginYamlURI + ']');
 
                 return await this.loadPluginMetadata(pluginYamlURI, longKeyFormat);
-                // return undefined;
             }
             ));
 
@@ -305,19 +277,14 @@ export class ChePluginServiceImpl implements ChePluginService {
         if (plugin.links && plugin.links.self) {
             const self: string = plugin.links.self;
             if (self.startsWith('/')) {
-                // /vitaliy-guliy/che-theia-plugin-registry/master/plugins/org.eclipse.che.samples.hello-world-frontend-plugin/0.0.1/meta.yaml
-                // /v2/plugins/che-incubator/typescript/1.30.2
                 const uri = new URI(registry.uri);
                 return `${uri.scheme}://${uri.authority}${self}`;
             } else {
                 const base = this.getBaseDirectory(registry);
-                // org.eclipse.che.samples.hello-world-frontend-plugin/0.0.1/meta.yaml
-                // che-incubator/typescript/1.30.2
                 return `${base}${self}`;
             }
         } else {
             const base = this.getBaseDirectory(registry);
-            // return `${base}${plugin.id}/${plugin.version}/meta.yaml`;
             return `${base}/${plugin.id}/meta.yaml`;
         }
     }
@@ -363,10 +330,6 @@ export class ChePluginServiceImpl implements ChePluginService {
         try {
             const props: ChePluginMetadata = await this.loadPluginYaml(yamlURI);
 
-            // TODO: remove this field. Check for `type` field instead.
-            // const disabled: boolean = props.type === 'Che Editor';
-
-            // let key: string;
             let key = `${props.publisher}/${props.name}/${props.version}`;
             if (longKeyFormat) {
                 if (yamlURI.endsWith(key)) {
@@ -392,7 +355,6 @@ export class ChePluginServiceImpl implements ChePluginService {
                 firstPublicationDate: props.firstPublicationDate,
                 category: props.category,
                 latestUpdateDate: props.latestUpdateDate,
-                // disabled: disabled,
                 key: key
             };
 
