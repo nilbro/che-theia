@@ -134,6 +134,10 @@
     border-color: var(--theia-accent-color3);
 }
 
+.che-plugin-control-panel .search[disabled] {
+    color: var(--theia-ui-font-color2);
+}
+
 /*-----------------------------------------------------------------------------
 | Menu button
 |----------------------------------------------------------------------------*/

@@ -23,7 +23,7 @@ import {
     CheApiService
 } from '../../common/che-protocol';
 
-import { HostedPluginServer } from '@theia/plugin-ext/lib/common/plugin-protocol';
+import { HostedPluginServer, PluginServer } from '@theia/plugin-ext/lib/common/plugin-protocol';
 import { MessageService, Emitter, Event } from '@theia/core/lib/common';
 import { ConfirmDialog } from '@theia/core/lib/browser';
 
@@ -64,6 +64,9 @@ export class ChePluginManager {
 
     @inject(HostedPluginServer)
     protected readonly hostedPluginServer: HostedPluginServer;
+
+    @inject(PluginServer)
+    protected readonly pluginServer: PluginServer;
 
     @inject(CheApiService)
     protected readonly cheApiService: CheApiService;
@@ -224,6 +227,29 @@ export class ChePluginManager {
             this.messageService.error(`Unable to remove plugin '${plugin.publisher}/${plugin.name}/${plugin.version}'. ${error.message}`);
             return false;
         }
+    }
+
+    async installVSCodeExtension(installCommand: string): Promise<boolean> {
+        console.log('>> PLUGIN MANAGER:installVSCodeExtension ', installCommand);
+
+        let idPublisher;
+        if (installCommand.startsWith('ext install ')) {
+            // check for 'ext install rebornix.Ruby'
+            idPublisher = installCommand.substring('ext install '.length);
+        } else if (installCommand.startsWith('vscode:extension/')) {
+            // check for 'vscode:extension/rebornix.Ruby'
+            idPublisher = installCommand.substring('vscode:extension/'.length);
+        }
+
+        try {
+            await this.pluginServer.deploy(installCommand);
+            this.messageService.info(`VS Code plugin ${idPublisher} has been installed`);
+
+        } catch (error) {
+            this.messageService.error(`Unable to install VS Code plugin ${idPublisher}`);
+        }
+
+        return true;
     }
 
     async delay(miliseconds: number): Promise<void> {

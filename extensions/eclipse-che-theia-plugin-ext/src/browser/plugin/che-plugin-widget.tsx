@@ -106,6 +106,13 @@ export class ChePluginWidget extends ReactWidget {
         }
     }
 
+    protected clearFilter = async () => {
+        this.currentFilter = '';
+
+        this.status = 'ready';
+        this.update();
+    }
+
     protected async updatePlugins(): Promise<void> {
         try {
             this.plugins = await this.chePluginManager.getPlugins(this.currentFilter);
@@ -117,11 +124,52 @@ export class ChePluginWidget extends ReactWidget {
         this.update();
     }
 
+    protected askToChangeFilter = async (filter: string, reloadPlugins: boolean) => {
+        // user may want to install plugin
+        // console.log(`>> askToChangeFilter [${filter}]`);
+
+        if (reloadPlugins) {
+            try {
+                let idPublisher;
+                if (filter.startsWith('ext install ')) {
+                    // check for 'ext install rebornix.Ruby'
+                    idPublisher = filter.substring('ext install '.length);
+                } else if (filter.startsWith('vscode:extension/')) {
+                    // check for 'vscode:extension/rebornix.Ruby'
+                    idPublisher = filter.substring('vscode:extension/'.length);
+                }
+
+                if (idPublisher) {
+                    // const id = filter.substring('ext install '.length);
+                    const parts = idPublisher.split('.');
+                    if (parts.length === 2 && parts[0] && parts[1]) {
+                        console.log(`    > install publisher ${parts[0]}`);
+                        console.log(`    > install id ${parts[1]}`);
+
+                        this.status = 'loading';
+                        this.update();
+
+                        await this.chePluginManager.installVSCodeExtension(filter);
+                        await this.clearFilter();
+                        return;
+                    }
+                }
+
+            } catch (error) {
+                console.log('error > ', error);
+            }
+
+        }
+
+        await this.updateFilter(filter, reloadPlugins);
+    }
+
     protected render(): React.ReactNode {
         const chePluginListControls = <ChePluginListControls
             chePluginMenu={this.chePluginMenu}
             filter={this.currentFilter}
-            update={this.updateFilter} />;
+            update={this.askToChangeFilter}
+            status={this.status} />;
 
         return <React.Fragment>
             {this.renderUpdateWorkspaceNotification()}
@@ -196,12 +244,22 @@ export class ChePluginWidget extends ReactWidget {
 }
 
 export class ChePluginListControls extends React.Component<
-    { chePluginMenu: ChePluginMenu, filter: string, update: (filter: string, reloadPlugins: boolean) => void },
+    {
+        chePluginMenu: ChePluginMenu,
+        filter: string,
+        update: (filter: string, reloadPlugins: boolean) => void,
+        status: string
+    },
     { menuButtonPressed: boolean, filter: string }> {
 
     private defaultFilter: string;
 
-    constructor(props: { chePluginMenu: ChePluginMenu, filter: string, update: (filter: string, reloadPlugins: boolean) => void }) {
+    constructor(props: {
+        chePluginMenu: ChePluginMenu,
+        filter: string,
+        update: (filter: string, reloadPlugins: boolean) => void,
+        status: string
+    }) {
         super(props);
 
         this.state = {
@@ -251,16 +309,29 @@ export class ChePluginListControls extends React.Component<
             value = this.state.filter;
         }
 
-        // onKeyUp={this.doFilter}
-        // defaultValue={this.props.filter}
-        // value={this.state.filter}
-        const input = <input
-            className='search'
-            type='text'
-            value={value}
-            onChange={this.handleChange}
-            onKeyUp={this.doFilter}
-        />;
+        // const input = <input
+        //     className='search'
+        //     type='text'
+        //     value={value}
+        //     onChange={this.handleChange}
+        //     onKeyUp={this.doFilter}
+        // />;
+
+        const input = this.props.status === 'loading' ?
+            <input
+                className='search'
+                type='text'
+                value={value}
+                onChange={this.handleChange}
+                onKeyUp={this.doFilter}
+                disabled
+            /> : <input
+                className='search'
+                type='text'
+                value={value}
+                onChange={this.handleChange}
+                onKeyUp={this.doFilter}
+            />;
 
         return <div className='che-plugin-control-panel'>
             <div>
