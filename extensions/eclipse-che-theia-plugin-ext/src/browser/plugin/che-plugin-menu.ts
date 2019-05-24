@@ -60,8 +60,6 @@ export class ChePluginMenu {
         commands.addCommand(ChePluginManagerCommands.SHOW_AVAILABLE_PLUGINS.id, {
             label: ChePluginManagerCommands.SHOW_AVAILABLE_PLUGINS.label,
             isEnabled: () => true,
-            // isToggled: () => true,
-            // isEnabled: () => false,
             execute: () => setTimeout(() => this.chePluginCommandContribution.showAvailablePlugins(), 100)
         });
 

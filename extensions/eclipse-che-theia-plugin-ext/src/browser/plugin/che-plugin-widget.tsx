@@ -22,8 +22,6 @@ import * as React from 'react';
 import { ChePluginRegistry, ChePluginMetadata } from '../../common/che-protocol';
 import { ChePluginManager } from './che-plugin-manager';
 import { ChePluginMenu } from './che-plugin-menu';
-
-// import { Widget, Message, BaseWidget, Key, StatefulWidget, MessageLoop } from '@theia/core/lib/browser';
 import { Key } from '@theia/core/lib/browser';
 
 @injectable()
@@ -126,16 +124,14 @@ export class ChePluginWidget extends ReactWidget {
 
     protected askToChangeFilter = async (filter: string, reloadPlugins: boolean) => {
         // user may want to install plugin
-        // console.log(`>> askToChangeFilter [${filter}]`);
-
         if (reloadPlugins) {
             try {
                 let idPublisher;
                 if (filter.startsWith('ext install ')) {
-                    // check for 'ext install rebornix.Ruby'
+                    // check for 'ext install publisher.id'
                     idPublisher = filter.substring('ext install '.length);
                 } else if (filter.startsWith('vscode:extension/')) {
-                    // check for 'vscode:extension/rebornix.Ruby'
+                    // check for 'vscode:extension/publisher.id'
                     idPublisher = filter.substring('vscode:extension/'.length);
                 }
 
@@ -143,9 +139,6 @@ export class ChePluginWidget extends ReactWidget {
                     // const id = filter.substring('ext install '.length);
                     const parts = idPublisher.split('.');
                     if (parts.length === 2 && parts[0] && parts[1]) {
-                        console.log(`    > install publisher ${parts[0]}`);
-                        console.log(`    > install id ${parts[1]}`);
-
                         this.status = 'loading';
                         this.update();
 
@@ -309,14 +302,6 @@ export class ChePluginListControls extends React.Component<
         } else {
             value = this.state.filter;
         }
-
-        // const input = <input
-        //     className='search'
-        //     type='text'
-        //     value={value}
-        //     onChange={this.handleChange}
-        //     onKeyUp={this.doFilter}
-        // />;
 
         const input = this.props.status === 'loading' ?
             <input

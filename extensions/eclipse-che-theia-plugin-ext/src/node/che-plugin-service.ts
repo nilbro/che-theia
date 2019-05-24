@@ -108,8 +108,6 @@ export class ChePluginServiceImpl implements ChePluginService {
     }
 
     filterByType(plugins: ChePluginMetadata[], type: string): ChePluginMetadata[] {
-        console.log('            > filter by type [' + type + ']');
-
         return plugins.filter(plugin => {
             const regex = / /gi;
             const t = plugin.type.toLowerCase().replace(regex, '_');
@@ -122,21 +120,15 @@ export class ChePluginServiceImpl implements ChePluginService {
     }
 
     filter(plugins: ChePluginMetadata[], filter: string): ChePluginMetadata[] {
-        console.log('    >> filter plugins !!!');
-
         let filteredPlugins = plugins;
         const filters = filter.split(' ');
 
         filters.forEach(f => {
-            console.log('        > f: [' + f + ']');
-
             if (f) {
                 if (f.startsWith('@')) {
                     if (f.startsWith('@type:')) {
                         const type = f.substring('@type:'.length);
                         filteredPlugins = this.filterByType(filteredPlugins, type);
-                    } else {
-                        console.log('            > skip [' + f + ']');
                     }
                 } else {
                     filteredPlugins = this.filterByText(filteredPlugins, f);
@@ -167,15 +159,6 @@ export class ChePluginServiceImpl implements ChePluginService {
      * @return list of available plugins
      */
     async getPlugins(registry: ChePluginRegistry, filter: string): Promise<ChePluginMetadata[]> {
-        await new Promise(resolve => { setTimeout(() => { resolve(); }, 100); });
-
-        console.log('');
-        console.log('-----------------------------------------------------------------------------------------');
-        console.log('>> GET PLUGINS');
-        console.log('');
-
-        await new Promise(resolve => { setTimeout(() => { resolve(); }, 100); });
-
         // ensure default plugin registry URI is set
         if (!this.defaultRegistry) {
             await this.getDefaultRegistry();
@@ -202,8 +185,6 @@ export class ChePluginServiceImpl implements ChePluginService {
 
     // without prefix
     async getAllPlugins(registry: ChePluginRegistry): Promise<ChePluginMetadata[]> {
-        console.log('    >> getAllPlugins');
-
         // Get list of ChePluginMetadataInternal from plugin registry
         const marketplacePlugins = await this.loadPluginList(registry);
         if (!marketplacePlugins) {
@@ -223,8 +204,6 @@ export class ChePluginServiceImpl implements ChePluginService {
 
     // has prefix @installed
     async getInstalledPlugins(): Promise<ChePluginMetadata[]> {
-        console.log('    >> getInstalledPlugins');
-
         const workspacePlugins = await this.getWorkspacePlugins();
         const plugins: ChePluginMetadata[] = await Promise.all(
             workspacePlugins.map(async workspacePlugin => {
@@ -242,7 +221,6 @@ export class ChePluginServiceImpl implements ChePluginService {
 
                     pluginYamlURI = `${uri}/${workspacePlugin}/meta.yaml`;
                 }
-                // console.log('        > plugin yaml URI  [' + pluginYamlURI + ']');
 
                 return await this.loadPluginMetadata(pluginYamlURI, longKeyFormat);
             }
@@ -382,13 +360,6 @@ export class ChePluginServiceImpl implements ChePluginService {
      * Sets new list of plugins to workspace configuration.
      */
     async setWorkspacePlugins(plugins: string[]): Promise<void> {
-        console.log('Set workspace plugins...');
-        console.log('----------------------------------------------------------------------------------');
-        plugins.forEach(plugin => {
-            console.log('> plugin > ' + plugin);
-        });
-        console.log('----------------------------------------------------------------------------------');
-
         const workspace: cheApi.workspace.Workspace = await this.cheApiService.currentWorkspace();
         if (workspace.config && workspace.config.attributes && workspace.config.attributes['plugins']) {
             workspace.config.attributes['plugins'] = plugins.join(',');
