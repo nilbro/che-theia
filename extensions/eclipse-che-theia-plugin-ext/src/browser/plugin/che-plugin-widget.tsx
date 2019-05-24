@@ -178,6 +178,7 @@ export class ChePluginWidget extends ReactWidget {
         </React.Fragment>;
     }
 
+    // Restart your workspace to apply changes
     protected renderUpdateWorkspaceNotification(): React.ReactNode {
         if (this.needToRestartWorkspace) {
             const notificationStyle = this.hidingRestartWorkspaceNotification ? 'notification hiding' : 'notification';
@@ -185,7 +186,7 @@ export class ChePluginWidget extends ReactWidget {
                 <div className={notificationStyle}>
                     <div className='notification-message' onClick={this.restartWorkspace}>
                         <i className='fa fa-check-circle'></i>&nbsp;
-                        Restart your workspace to apply changes
+                        Click here to apply changes and restart your workspace
                     </div>
 
                     <div className='notification-control'>

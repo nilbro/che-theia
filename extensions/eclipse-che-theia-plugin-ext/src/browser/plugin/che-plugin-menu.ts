@@ -71,12 +71,6 @@ export class ChePluginMenu {
             execute: () => setTimeout(() => this.chePluginCommandContribution.showInstalledPlugins(), 100)
         });
 
-        commands.addCommand(ChePluginManagerCommands.SHOW_EDITORS.id, {
-            label: ChePluginManagerCommands.SHOW_EDITORS.label,
-            isEnabled: () => true,
-            execute: () => setTimeout(() => this.chePluginCommandContribution.showEditors(), 100)
-        });
-
         commands.addCommand(ChePluginManagerCommands.SHOW_BUILT_IN_PLUGINS.id, {
             label: ChePluginManagerCommands.SHOW_BUILT_IN_PLUGINS.label,
             isEnabled: () => false,
@@ -101,11 +95,6 @@ export class ChePluginMenu {
         menu.addItem({
             type: 'command',
             command: ChePluginManagerCommands.SHOW_INSTALLED_PLUGINS.id
-        });
-
-        menu.addItem({
-            type: 'command',
-            command: ChePluginManagerCommands.SHOW_EDITORS.id
         });
 
         menu.addItem({

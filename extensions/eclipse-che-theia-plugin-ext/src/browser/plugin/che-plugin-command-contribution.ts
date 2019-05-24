@@ -38,7 +38,6 @@ export namespace ChePluginManagerCommands {
 
     export const SHOW_AVAILABLE_PLUGINS = cmd('show-available-plugins', 'Show Available Plugins');
     export const SHOW_INSTALLED_PLUGINS = cmd('show-installed-plugins', 'Show Installed Plugins');
-    export const SHOW_EDITORS = cmd('show-editors', 'Show Editors');
     export const SHOW_BUILT_IN_PLUGINS = cmd('show-built-in-plugins', 'Show Built-in Plugins');
 
     export const CHANGE_REGISTRY = cmd('change-registry', 'Change Registry');
@@ -61,26 +60,6 @@ export class ChePluginCommandContribution implements CommandContribution {
     protected readonly chePluginManager: ChePluginManager;
 
     registerCommands(commands: CommandRegistry): void {
-        // commands.registerCommand(ChePluginManagerCommands.SHOW_AVAILABLE_PLUGINS, {
-        //     // activate: true,
-        //     execute: () => this.showAvailablePlugins()
-        // });
-        // commands.registerCommand(ChePluginManagerCommands.SHOW_INSTALLED_PLUGINS, {
-        //     // activate: true,
-        //     execute: () => this.showInstalledPlugins()
-        // });
-        // commands.registerCommand(ChePluginManagerCommands.SHOW_EDITORS, {
-        //     // toggle: true,
-        //     // isToggle: () => { return true },
-        //     // activate: true,
-        //     execute: () => this.showEditors()
-        // });
-        // commands.registerCommand(ChePluginManagerCommands.SHOW_BUILT_IN_PLUGINS, {
-        //     // isEnabled: () => false,
-        //     // isVisible: () => !!this.cppManager.getActiveConfig(),
-        //     execute: () => this.showBuiltInPlugins()
-        // });
-
         commands.registerCommand(ChePluginManagerCommands.CHANGE_REGISTRY, {
             execute: () => this.changePluginRegistry()
         });
@@ -88,49 +67,16 @@ export class ChePluginCommandContribution implements CommandContribution {
         commands.registerCommand(ChePluginManagerCommands.ADD_REGISTRY, {
             execute: () => this.addPluginRegistry()
         });
-
     }
-
-    // Here are the Extensions view filters:
-
-    // @builtin - Show extensions that come with VS Code. Grouped by type (Programming Languages, Themes, etc.).
-    // @disabled - Show disabled installed extensions.
-    // @installed - Show installed extensions.
-    // @outdated - Show outdated installed extensions. A newer version is available on the Marketplace.
-    // @enabled - Show enabled installed extensions. Extensions can be individually enabled/disabled.
-    // @recommended - Show recommended extensions. Grouped as Workspace specific or general use.
-    // @category - Show extensions belonging to specified category. Below are a few of supported categories.
-    // For a complete list, type @category and follow the options in the suggestion list:
-
-    // @category:themes
-    // @category:formatters
-    // @category:linters
-    // @category:snippets
-
-    // @type:che_editor
-    // @type:che_plugin
-    // @type:theia_plugin
-    // @type:vs_code_extension
 
     //
     async showAvailablePlugins() {
-        console.log('>> showAvailablePlugins');
-
         this.chePluginManager.changeFilter('', true);
     }
 
     // @installed
     async showInstalledPlugins() {
-        console.log('>> showInstalledPlugins');
-
         this.chePluginManager.changeFilter('@installed', true);
-    }
-
-    // @type:che_editor
-    async showEditors() {
-        console.log('>> showEditors');
-
-        this.chePluginManager.changeFilter('@type:che_editor', true);
     }
 
     // @builtin

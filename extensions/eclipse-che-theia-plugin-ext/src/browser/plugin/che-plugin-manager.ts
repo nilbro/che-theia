@@ -23,11 +23,12 @@ import {
     CheApiService
 } from '../../common/che-protocol';
 
-import { HostedPluginServer, PluginServer } from '@theia/plugin-ext/lib/common/plugin-protocol';
+import { PluginServer } from '@theia/plugin-ext/lib/common/plugin-protocol';
 import { MessageService, Emitter, Event } from '@theia/core/lib/common';
 import { ConfirmDialog } from '@theia/core/lib/browser';
 
 import { ChePluginPreferences } from './che-plugin-preferences';
+import { ChePluginFrontentService } from './che-plugin-frontend-service';
 import { PreferenceService, PreferenceScope } from '@theia/core/lib/browser/preferences';
 
 @injectable()
@@ -62,9 +63,6 @@ export class ChePluginManager {
     @inject(ChePluginService)
     protected readonly chePluginService: ChePluginService;
 
-    @inject(HostedPluginServer)
-    protected readonly hostedPluginServer: HostedPluginServer;
-
     @inject(PluginServer)
     protected readonly pluginServer: PluginServer;
 
@@ -79,6 +77,9 @@ export class ChePluginManager {
 
     @inject(PreferenceService)
     protected readonly preferenceService: PreferenceService;
+
+    @inject(ChePluginFrontentService)
+    protected readonly pluginFrontentService: ChePluginFrontentService;
 
     protected readonly pluginRegistryChanged = new Emitter<ChePluginRegistry>();
 
@@ -177,13 +178,12 @@ export class ChePluginManager {
      * Returns plugin list from active registry
      */
     async getPlugins(filter: string): Promise<ChePluginMetadata[]> {
-        // get list of deployed plugins from runtime
-        // will be used in the future
-        // const metadata = await this.hostedPluginServer.getDeployedMetadata();
-
         await this.initDefaults();
 
+        // const plugins = await this.chePluginService.getPlugins(this.activeRegistry, filter);
         this.availablePlugins = await this.chePluginService.getPlugins(this.activeRegistry, filter);
+        // const deployedPlugins = await this.pluginFrontentService.getDeployedPlugins(filter);
+        // this.availablePlugins = plugins.concat(deployedPlugins);
         return this.availablePlugins;
     }
 
